@@ -49,16 +49,45 @@ import com.maksimowiczm.foodyou.common.domain.measurement.MeasurementType
 import com.maksimowiczm.foodyou.common.domain.measurement.from
 import com.maksimowiczm.foodyou.common.domain.measurement.rawValue
 import com.maksimowiczm.foodyou.common.domain.measurement.type
+import com.maksimowiczm.foodyou.scale.domain.ScaleConnectionState
+import com.maksimowiczm.foodyou.scale.domain.ScaleUnit
 import foodyou.app.generated.resources.*
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
-fun MeasurementPicker(state: MeasurementPickerState, modifier: Modifier = Modifier) {
+fun MeasurementPicker(
+    state: MeasurementPickerState,
+    scaleConnectionState: ScaleConnectionState = ScaleConnectionState.Idle,
+    scaleEnabled: Boolean = false,
+    modifier: Modifier = Modifier,
+) {
     val latestState by rememberUpdatedState(state)
     LaunchedEffect(state.inputField.value, state.type) {
         val value = state.inputField.value ?: return@LaunchedEffect
         val measurement = Measurement.from(state.type, value.toDouble())
         latestState.measurement = measurement
+    }
+
+    fun fillWithScaleReading(connectionState: ScaleConnectionState.Connected) {
+        val reading = connectionState.reading ?: return
+        if (!reading.isStable) return
+
+        val inputValue =
+            when (reading.unit) {
+                ScaleUnit.Pounds -> reading.unit.toDisplayOunces(reading.weightGrams)
+                else -> reading.weightGrams
+            }
+        state.inputField.textFieldState.setTextAndPlaceCursorAtEnd(inputValue.formatClipZeros())
+        state.type = reading.unit.toMeasurementType()
+    }
+
+    LaunchedEffect(scaleConnectionState) {
+        if (!scaleEnabled) {
+            return@LaunchedEffect
+        }
+
+        val connected = scaleConnectionState as? ScaleConnectionState.Connected ?: return@LaunchedEffect
+        fillWithScaleReading(connected)
     }
 
     Column(modifier) {
@@ -93,6 +122,26 @@ fun MeasurementPicker(state: MeasurementPickerState, modifier: Modifier = Modifi
                         state.type = measurement.type
                     },
                     label = { Text(measurement.stringResource()) },
+                )
+            }
+
+            val connected = scaleConnectionState as? ScaleConnectionState.Connected
+            if (scaleEnabled && connected != null) {
+                SuggestionChip(
+                    onClick = { fillWithScaleReading(connected) },
+                    label = {
+                        Text(org.jetbrains.compose.resources.stringResource(Res.string.action_use_smart_scale))
+                    },
+                )
+            }
+
+            if (scaleEnabled && scaleConnectionState is ScaleConnectionState.Scanning) {
+                Text(
+                    text =
+                        org.jetbrains.compose.resources.stringResource(
+                            Res.string.headline_scale_connecting
+                        ),
+                    style = MaterialTheme.typography.bodySmall,
                 )
             }
         }

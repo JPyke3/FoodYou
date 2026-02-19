@@ -1,5 +1,7 @@
 package com.maksimowiczm.foodyou.app.ui.food.diary.add
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maksimowiczm.foodyou.common.domain.date.DateProvider
@@ -20,6 +22,9 @@ import com.maksimowiczm.foodyou.food.domain.usecase.ObserveMeasurementSuggestion
 import com.maksimowiczm.foodyou.fooddiary.domain.event.FoodDiaryEntryCreatedEvent
 import com.maksimowiczm.foodyou.fooddiary.domain.repository.MealRepository
 import com.maksimowiczm.foodyou.fooddiary.domain.usecase.CreateFoodDiaryEntryUseCase
+import com.maksimowiczm.foodyou.scale.domain.ScaleConnectionState
+import com.maksimowiczm.foodyou.scale.domain.ScaleRepository
+import com.maksimowiczm.foodyou.scale.infrastructure.ScalePreferencesKeys
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,6 +49,8 @@ internal class AddEntryViewModel(
     mealRepository: MealRepository,
     private val dateProvider: DateProvider,
     private val eventBus: EventBus,
+    private val scaleRepository: ScaleRepository,
+    private val dataStore: DataStore<Preferences>,
     private val foodId: FoodId,
 ) : ViewModel() {
 
@@ -134,6 +141,30 @@ internal class AddEntryViewModel(
                 started = SharingStarted.WhileSubscribed(2_000),
                 initialValue = null,
             )
+
+    val scaleConnectionState: StateFlow<ScaleConnectionState> =
+        scaleRepository.connectionState.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(2_000),
+            initialValue = ScaleConnectionState.Idle,
+        )
+
+    val scaleEnabled: StateFlow<Boolean> =
+        dataStore.data
+            .map { it[ScalePreferencesKeys.SCALE_ENABLED] ?: false }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(2_000),
+                initialValue = false,
+            )
+
+    fun startScaleScanning() {
+        scaleRepository.startScanning()
+    }
+
+    fun stopScaleScanning() {
+        scaleRepository.stopScanning()
+    }
 
     fun deleteFood() {
         viewModelScope.launch {

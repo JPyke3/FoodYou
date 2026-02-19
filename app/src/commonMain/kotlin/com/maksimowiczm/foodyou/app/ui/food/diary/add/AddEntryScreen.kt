@@ -54,6 +54,7 @@ import com.maksimowiczm.foodyou.common.extension.minus
 import com.maksimowiczm.foodyou.common.extension.plus
 import com.maksimowiczm.foodyou.food.domain.entity.FoodHistory
 import com.maksimowiczm.foodyou.food.domain.entity.FoodId
+import com.maksimowiczm.foodyou.scale.domain.ScaleConnectionState
 import foodyou.app.generated.resources.*
 import kotlin.time.Duration.Companion.days
 import kotlinx.datetime.LocalDate
@@ -91,6 +92,20 @@ fun AddEntryScreen(
     val suggestions = viewModel.suggestions.collectAsStateWithLifecycle().value
     val possibleTypes = viewModel.possibleMeasurementTypes.collectAsStateWithLifecycle().value
     val measurementSuggestion by viewModel.suggestedMeasurement.collectAsStateWithLifecycle()
+    val scaleConnectionState by viewModel.scaleConnectionState.collectAsStateWithLifecycle()
+    val scaleEnabled by viewModel.scaleEnabled.collectAsStateWithLifecycle()
+
+    LaunchedEffect(scaleEnabled) {
+        if (scaleEnabled) {
+            viewModel.startScaleScanning()
+        } else {
+            viewModel.stopScaleScanning()
+        }
+    }
+
+    DisposableEffect(Unit) {
+        onDispose { viewModel.stopScaleScanning() }
+    }
 
     // This is stupid that it is here but it's going to be deleted in 4.0.0
     val selectedMeasurement =
@@ -171,6 +186,8 @@ fun AddEntryScreen(
             food = food,
             history = events,
             state = state,
+            scaleConnectionState = scaleConnectionState,
+            scaleEnabled = scaleEnabled,
             animatedVisibilityScope = animatedVisibilityScope,
             modifier = modifier,
         )
@@ -188,6 +205,8 @@ private fun AddEntryScreen(
     food: FoodModel,
     history: List<FoodHistory>,
     state: FoodMeasurementFormState,
+    scaleConnectionState: ScaleConnectionState,
+    scaleEnabled: Boolean,
     animatedVisibilityScope: AnimatedVisibilityScope,
     modifier: Modifier = Modifier,
 ) {
@@ -275,7 +294,12 @@ private fun AddEntryScreen(
                 HorizontalDivider(Modifier.padding(horizontal = 8.dp))
                 ChipsMealPicker(state = state.mealsState, modifier = Modifier.padding(8.dp))
                 HorizontalDivider(Modifier.padding(horizontal = 8.dp))
-                MeasurementPicker(state = state.measurementState, modifier = Modifier.padding(8.dp))
+                MeasurementPicker(
+                    state = state.measurementState,
+                    scaleConnectionState = scaleConnectionState,
+                    scaleEnabled = scaleEnabled,
+                    modifier = Modifier.padding(8.dp),
+                )
             }
 
             if (food is RecipeModel) {

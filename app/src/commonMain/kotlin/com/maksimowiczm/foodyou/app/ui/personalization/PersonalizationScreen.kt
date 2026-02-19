@@ -211,9 +211,10 @@ private fun SmartScaleSettingsListItem(
     onToggle: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val toggle = rememberSmartScaleToggle(onToggle)
     SettingsListItem(
         label = { Text(stringResource(Res.string.headline_smart_scale)) },
-        onClick = { onToggle(!checked) },
+        onClick = { toggle(!checked) },
         modifier = modifier,
         supportingContent = { Text(stringResource(Res.string.description_smart_scale)) },
         icon = { Icon(imageVector = Icons.Outlined.MonitorWeight, contentDescription = null) },
