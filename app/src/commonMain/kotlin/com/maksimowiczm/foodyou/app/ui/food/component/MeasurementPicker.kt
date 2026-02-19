@@ -73,7 +73,6 @@ fun MeasurementPicker(
 
     fun fillWithScaleReading(connectionState: ScaleConnectionState.Connected) {
         val reading = connectionState.reading ?: return
-        if (!reading.isStable) return
 
         val inputValue =
             when (reading.unit) {
