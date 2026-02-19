@@ -60,9 +60,8 @@ class AndroidBleScaleManager(
 
             awaitClose {
                 stopScanning()
-                val activeGatt = gatt
-                activeGatt?.disconnect()
-                activeGatt?.close()
+                gatt?.disconnect()
+                // close() is called in onConnectionStateChange when STATE_DISCONNECTED
                 gatt = null
                 stateEmitter = null
             }
