@@ -19,9 +19,12 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.KeyboardArrowDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
@@ -81,8 +84,10 @@ fun MeasurementPicker(
         state.type = reading.unit.toMeasurementType()
     }
 
+    var useScale by rememberSaveable { mutableStateOf(true) }
+
     LaunchedEffect(scaleConnectionState) {
-        if (!scaleEnabled) {
+        if (!scaleEnabled || !useScale) {
             return@LaunchedEffect
         }
 
@@ -127,10 +132,22 @@ fun MeasurementPicker(
 
             val connected = scaleConnectionState as? ScaleConnectionState.Connected
             if (scaleEnabled && connected != null) {
-                SuggestionChip(
-                    onClick = { fillWithScaleReading(connected) },
+                FilterChip(
+                    selected = useScale,
+                    onClick = { useScale = !useScale },
                     label = {
                         Text(org.jetbrains.compose.resources.stringResource(Res.string.action_use_smart_scale))
+                    },
+                    leadingIcon = if (useScale) {
+                        {
+                            Icon(
+                                imageVector = Icons.Filled.Check,
+                                contentDescription = null,
+                                modifier = Modifier.size(FilterChipDefaults.IconSize),
+                            )
+                        }
+                    } else {
+                        null
                     },
                 )
             }
