@@ -135,7 +135,7 @@ fun MeasurementPicker(
                 )
             }
 
-            if (scaleEnabled && scaleConnectionState is ScaleConnectionState.Scanning) {
+            if (scaleEnabled && (scaleConnectionState is ScaleConnectionState.Scanning || scaleConnectionState is ScaleConnectionState.Connecting)) {
                 Text(
                     text =
                         org.jetbrains.compose.resources.stringResource(

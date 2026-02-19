@@ -10,14 +10,12 @@ import android.bluetooth.BluetoothGattDescriptor
 import android.bluetooth.BluetoothGattService
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
-import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.os.ParcelUuid
 import com.maksimowiczm.foodyou.scale.domain.ScaleConnectionState
 import com.maksimowiczm.foodyou.scale.domain.ScaleProtocol
 import com.maksimowiczm.foodyou.scale.domain.ScaleRepository
@@ -161,9 +159,7 @@ class AndroidBleScaleManager(
             object : ScanCallback() {
                 override fun onScanResult(callbackType: Int, result: ScanResult?) {
                     val device = result?.device ?: return
-                    val serviceUuids = device.uuids?.map { it.uuid } ?: emptyList()
-
-                    if (!protocol.matchesDevice(device.name, serviceUuids)) {
+                    if (!protocol.matchesDevice(device.name, emptyList())) {
                         return
                     }
 
@@ -178,15 +174,9 @@ class AndroidBleScaleManager(
 
         scanCallback = callback
 
-        val filters =
-            listOf(
-                ScanFilter.Builder()
-                    .setServiceUuid(ParcelUuid(protocol.serviceUuid))
-                    .build()
-            )
         val settings = ScanSettings.Builder().setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY).build()
 
-        bluetoothScanner.startScan(filters, settings, callback)
+        bluetoothScanner.startScan(null, settings, callback)
 
         val timeoutRunnable = Runnable { stopScanning() }
         scanTimeoutRunnable = timeoutRunnable
