@@ -115,6 +115,22 @@ class QnKsProtocolTest {
     }
 
     @Test
+    fun testWeightAbove1kg() {
+        // byte[6] = 0x04 means no decimal place (divisor = 1), raw 2000 = 2000g
+        val data = byteArrayOf(
+            0x10, 0x12, 0x00, 0x78.toByte(), 0x01, 0x02,
+            0x04, // decimal point indicator — no decimal place
+            0x01, // unit = grams
+            0xF0.toByte(), // stable
+            0x07, 0xD0.toByte(), // raw 2000
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        )
+        val result = protocol.parseNotification(protocol.notifyCharacteristicUuid, data)
+        assertEquals(2000.0, result!!.weightGrams, 0.01)
+        assertTrue(result.isStable)
+    }
+
+    @Test
     fun testUnknownUnit() {
         val result = protocol.parseNotification(
             protocol.notifyCharacteristicUuid,

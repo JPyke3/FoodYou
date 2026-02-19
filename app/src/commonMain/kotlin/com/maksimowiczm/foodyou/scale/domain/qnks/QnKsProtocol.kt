@@ -25,8 +25,13 @@ class QnKsProtocol : ScaleProtocol {
             else -> return null
         }
 
-        val isStable = (value[8].toInt() and 0xFF) == 0xF0
-        val weight = (((value[9].toInt() and 0xFF) shl 8) or (value[10].toInt() and 0xFF)) / 10.0
+        val isStable = (value[8].toInt() and 0xFF) and 0xF0 == 0xF0
+        val raw = ((value[9].toInt() and 0xFF) shl 8) or (value[10].toInt() and 0xFF)
+        val divisor = when (value[6].toInt() and 0xFF) {
+            0x05 -> 10.0
+            else -> 1.0
+        }
+        val weight = raw / divisor
 
         return ScaleReading(weightGrams = weight, unit = unit, isStable = isStable)
     }
