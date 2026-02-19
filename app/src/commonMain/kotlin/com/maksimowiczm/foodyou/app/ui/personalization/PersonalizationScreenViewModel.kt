@@ -1,8 +1,12 @@
 package com.maksimowiczm.foodyou.app.ui.personalization
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.maksimowiczm.foodyou.common.domain.userpreferences.UserPreferencesRepository
+import com.maksimowiczm.foodyou.scale.infrastructure.ScalePreferencesKeys
 import com.maksimowiczm.foodyou.settings.domain.entity.EnergyFormat
 import com.maksimowiczm.foodyou.settings.domain.entity.Settings
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,7 +17,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
 internal class PersonalizationScreenViewModel(
-    private val settingsRepository: UserPreferencesRepository<Settings>
+    private val settingsRepository: UserPreferencesRepository<Settings>,
+    private val dataStore: DataStore<Preferences>,
 ) : ViewModel() {
 
     private val _secureScreen = settingsRepository.observe().map { it.secureScreen }
@@ -38,5 +43,19 @@ internal class PersonalizationScreenViewModel(
 
     fun setEnergyFormat(format: EnergyFormat) {
         viewModelScope.launch { settingsRepository.update { copy(energyFormat = format) } }
+    }
+
+    private val _scaleEnabled = dataStore.data.map { it[ScalePreferencesKeys.SCALE_ENABLED] ?: false }
+    val scaleEnabled =
+        _scaleEnabled.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(2_000),
+            initialValue = runBlocking { _scaleEnabled.first() },
+        )
+
+    fun setScaleEnabled(enabled: Boolean) {
+        viewModelScope.launch {
+            dataStore.edit { it[ScalePreferencesKeys.SCALE_ENABLED] = enabled }
+        }
     }
 }

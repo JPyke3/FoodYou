@@ -10,6 +10,7 @@ import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.Bolt
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.MonitorWeight
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -74,6 +75,13 @@ fun PersonalizationScreen(
                 SecureScreenSettingsListItem(
                     checked = viewModel.secureScreen.collectAsStateWithLifecycle().value,
                     onToggle = viewModel::toggleSecureScreen,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            item {
+                SmartScaleSettingsListItem(
+                    checked = viewModel.scaleEnabled.collectAsStateWithLifecycle().value,
+                    onToggle = viewModel::setScaleEnabled,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
@@ -192,6 +200,24 @@ private fun ThemeSettingsListItem(onClick: () -> Unit, modifier: Modifier = Modi
         modifier = modifier,
         supportingContent = { Text(stringResource(Res.string.description_colors)) },
         icon = { Icon(imageVector = Icons.Outlined.Palette, contentDescription = null) },
+        color = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.onSurface,
+    )
+}
+
+@Composable
+private fun SmartScaleSettingsListItem(
+    checked: Boolean,
+    onToggle: (Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    SettingsListItem(
+        label = { Text(stringResource(Res.string.headline_smart_scale)) },
+        onClick = { onToggle(!checked) },
+        modifier = modifier,
+        supportingContent = { Text(stringResource(Res.string.description_smart_scale)) },
+        icon = { Icon(imageVector = Icons.Outlined.MonitorWeight, contentDescription = null) },
+        trailingContent = { Switch(checked = checked, onCheckedChange = null) },
         color = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface,
     )

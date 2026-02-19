@@ -17,8 +17,13 @@
     <string name="headline_language">Language</string>
     <string name="headline_system">System</string>
     <string name="headline_system_language_settings">System language settings</string>
-    <string name="headline_secure_screen">Secure screen</string>
-    <string name="headline_about">About</string>
+     <string name="headline_secure_screen">Secure screen</string>
+     <string name="headline_smart_scale">Smart scale</string>
+     <string name="description_smart_scale">Automatically fill weight from a connected Bluetooth scale</string>
+     <string name="action_use_smart_scale">Use smart scale</string>
+     <string name="headline_scale_connecting">Connecting to scale…</string>
+     <string name="headline_scale_connected">Scale connected</string>
+     <string name="headline_about">About</string>
     <string name="headline_version">Version</string>
     <string name="headline_all_day" description="All-day (meal)">All-day</string>
     <string name="headline_time_based_ordering">Time-based ordering</string>
